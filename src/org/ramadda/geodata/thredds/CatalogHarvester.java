@@ -508,12 +508,14 @@ public class CatalogHarvester extends Harvester {
         }
 
         boolean haveChildDatasets = false;
+				boolean haveChildCatalogs = false;
         for (int i = 0; i < elements.getLength(); i++) {
             Element child = (Element) elements.item(i);
             if (XmlUtil.isTag(child, CatalogUtil.TAG_DATASET)) {
                 haveChildDatasets = true;
-
-                break;
+            }
+            if (XmlUtil.isTag(child, CatalogUtil.TAG_CATALOGREF)) {
+                haveChildCatalogs = true;
             }
         }
 
@@ -534,6 +536,9 @@ public class CatalogHarvester extends Harvester {
             }
         }
 
+				// if we don't have child datasets or catalogs then we're done
+				if (!haveChildDatasets && !haveChildCatalogs) return;
+
         name = name.replace(Entry.IDDELIMITER, "--");
         name = name.replace("'", "");
         Entry group = null;
@@ -546,8 +551,8 @@ public class CatalogHarvester extends Harvester {
             }
         }
 
+        if (group == null) { 
 
-        if (group == null) {
             group = getEntryManager().makeNewGroup(parent, name, getUser());
             List<Metadata> metadataList = new ArrayList<Metadata>();
             CatalogOutputHandler.collectMetadata(repository, metadataList,
@@ -560,7 +565,7 @@ public class CatalogHarvester extends Harvester {
             crumbs = crumbs.replace("class=", "xclass=");
             groups.add(crumbs);
             groupCnt++;
-            if (groups.size() > 100) {
+            if (groups.size() > 100) { // why?
                 groups = new ArrayList<String>();
             }
         }
